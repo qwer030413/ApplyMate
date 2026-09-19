@@ -13,6 +13,7 @@ import {
   GraduationCap,
   Globe,
   HardDrive,
+  KeyRound,
   Link,
   ListChecks,
   LoaderCircle,
@@ -301,6 +302,31 @@ function ProfileApp() {
   }
   const ready = readiness(profile);
   const active = sections.find((s) => s.id === section)!;
+  const aiModeChoices: {
+    key: "workAuthorization" | "salaryExpectations" | "sensitiveQuestions";
+    label: string;
+    help: string;
+  }[] = [
+    {
+      key: "workAuthorization",
+      label: "Work authorization",
+      help: "Allow AI Mode to draft answers about authorization and sponsorship.",
+    },
+    {
+      key: "salaryExpectations",
+      label: "Salary expectations",
+      help: "Allow AI Mode to draft compensation-related answers.",
+    },
+    {
+      key: "sensitiveQuestions",
+      label: "Sensitive questions",
+      help: "Allow AI Mode to draft answers for demographic or personal questions.",
+    },
+  ];
+
+
+
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -890,6 +916,81 @@ function ProfileApp() {
                         <Upload size={16} />
                         Import backup
                       </button>
+                    </div>
+                  </section>
+                  <section className="editor-section">
+                    <div className="section-heading">
+                      <Settings2 size={19} />
+                      <h2>AI mode</h2>
+                    </div>
+                    <p className="muted">
+                      Use AI to draft answers for application fields that need
+                      more context than your saved profile.
+                    </p>
+                    <label className="check-label">
+                      <input
+                        type="checkbox"
+                        checked={profile.aiMode.enabled}
+                        onChange={(event) =>
+                          update({
+                            ...profile,
+                            aiMode: {
+                              ...profile.aiMode,
+                              enabled: event.target.checked,
+                            },
+                          })
+                        }
+                      />
+                      Enable AI Mode
+                    </label>
+                    <div className="form-grid">
+                      <label className="field wide">
+                        <span>API key</span>
+                        <input
+                          type="password"
+                          autoComplete="off"
+                          placeholder="sk-..."
+                          value={profile.aiMode.APIkey}
+                          onChange={(event) =>
+                            update({
+                              ...profile,
+                              aiMode: {
+                                ...profile.aiMode,
+                                APIkey: event.target.value,
+                              },
+                            })
+                          }
+                        />
+                      </label>
+                    </div>
+                    <div className="answer-row">
+                      <div className="section-heading">
+                        <KeyRound size={18} />
+                        <h2>Allowed AI answer types</h2>
+                      </div>
+                      {aiModeChoices.map((choice) => (
+                        <label className="check-label" key={choice.key}>
+                          <input
+                            type="checkbox"
+                            checked={profile.aiMode[choice.key]}
+                            disabled={!profile.aiMode.enabled}
+                            onChange={(event) =>
+                              update({
+                                ...profile,
+                                aiMode: {
+                                  ...profile.aiMode,
+                                  [choice.key]: event.target.checked,
+                                },
+                              })
+                            }
+                          />
+                          <span>
+                            {choice.label}
+                            <br />
+                            <small className="muted">{choice.help}</small>
+                          </span>
+                        </label>
+                      ))}
                     </div>
                   </section>
                   <section className="editor-section">

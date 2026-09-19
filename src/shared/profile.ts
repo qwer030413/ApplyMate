@@ -20,6 +20,13 @@ export const educationSchema = z.object({
   endDate: text,
   gpa: text,
 });
+const aiModeDefault = {
+  enabled: false,
+  APIkey: "",
+  workAuthorization: true,
+  salaryExpectations: false,
+  sensitiveQuestions: false,
+};
 export const profileSchema = z.object({
   schemaVersion: z.literal(1),
   personal: z.object({
@@ -45,9 +52,17 @@ export const profileSchema = z.object({
     heardAbout: text.default(""),
     gender: text.default(""),
     hispanicLatino: text.default(""),
+    race: text.default(""),
     veteranStatus: text.default(""),
     disabilityStatus: text.default(""),
   }),
+  aiMode: z.object({
+    enabled: z.boolean(),
+    APIkey: text.default(""),
+    workAuthorization: z.boolean(),
+    salaryExpectations: z.boolean(),
+    sensitiveQuestions: z.boolean(),
+  }).default(aiModeDefault),
   savedAnswers: z
     .array(z.object({ id, question: text, answer: text }))
     .max(100),
@@ -81,8 +96,16 @@ export function emptyProfile(): ApplicantProfile {
       heardAbout: "",
       gender: "",
       hispanicLatino: "",
+      race: "",
       veteranStatus: "",
       disabilityStatus: "",
+    },
+    aiMode: {
+      enabled: false,
+      APIkey : "",
+      workAuthorization: true,
+      salaryExpectations: false,
+      sensitiveQuestions: false,
     },
     savedAnswers: [],
   };

@@ -2,6 +2,7 @@ import { profileStore } from "../shared/storage";
 import { matchField } from "../shared/matching";
 import type { DetectedField } from "../shared/types";
 import { resumeStore, attachmentFor, isResumeField, acceptsResume } from '../shared/resume-file';
+import { aiMatchField } from "./ai-match";
 const secure = () =>
   chrome.storage.local.setAccessLevel({ accessLevel: "TRUSTED_CONTEXTS" });
 void secure();
@@ -50,7 +51,16 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
       const resume=fields.some(field=>field.type==='file'&&!field.filled&&isResumeField(field.label))?await resumeStore.get():null;
       let attachment:Awaited<ReturnType<typeof attachmentFor>>|undefined;
       return Promise.all(fields.map(async(field) => {
-        if(field.type!=='file'||field.filled||!isResumeField(field.label))return matchField(field,profile);
+        if (field.type !== "file" || field.filled || !isResumeField(field.label)) {
+          const deterministic = matchField(field, profile);
+
+          if (deterministic.value || deterministic.attachment) {
+            return deterministic;
+          }
+
+          const ai = await aiMatchField(field, profile);
+          return ai || deterministic;
+        }
         if(!resume)return {id:field.id,reason:'Save a resume in ApplyMate or attach one yourself.'};
         if(!acceptsResume(field.accept,resume))return {id:field.id,reason:'The saved resume format is not accepted here. Attach a compatible file.'};
         attachment??=await attachmentFor(resume);
